@@ -18,7 +18,7 @@ tools:
       required: [question]
 
   - name: search_kb
-    description: "Tìm hướng dẫn hỗ trợ kỹ thuật."
+    description: "Tìm hướng dẫn hỗ trợ kỹ thuật như cấu hình, cài đặt phần mềm, hệ điều hành."
     parameters:
       type: object
       properties:
@@ -28,7 +28,7 @@ tools:
       required: [query]
 
   - name: check_service_status
-    description: "Kiểm tra trạng thái một dịch vụ."
+    description: "Kiểm tra trạng thái một dịch vụ. Cần dùng khi dịch vụ gặp sự cố hoặc người dùng yêu cầu. Xác định rõ môi trường staging/production, nếu không có hỏi lại người dùng"
     parameters:
       type: object
       properties:
