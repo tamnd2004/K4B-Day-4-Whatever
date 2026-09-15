@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Reference: Tool-Calling Architecture & Eval System</title>
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="container">
+  <header>
+    <span class="badge">Reference Guide 01</span>
+    <h1>Tool-Calling Architecture & Evaluation Harness</h1>
+    <p class="subtitle">A quick-reference architectural blueprint for the Day 04 Helpdesk AI Assistant.</p>
+    <div class="meta-bar">
+      <span>Topic: AI Agent & Tool Calling</span>
+      <span>Target: Day 04 Lab (VinUni AIA)</span>
+      <span>Associated Code: <code>agent.py</code>, <code>run_eval.py</code></span>
+    </div>
+  </header>
+
+  <section>
+    <h2>1. The Agent Tool-Calling Lifecycle</h2>
+    <p>How the Helpdesk Agent interacts with the LLM provider and local tool functions:</p>
+    
+    <div class="flow-grid">
+      <div class="flow-card">
+        <div class="step-num">Step 1: Context Construction</div>
+        <h4>System Prompt + Messages</h4>
+        <p>User queries or multi-turn transcripts are combined with <code>system_prompt.md</code> and sent alongside tool schemas from <code>tools.yaml</code>.</p>
+      </div>
+      <div class="flow-card">
+        <div class="step-num">Step 2: LLM Tool Routing</div>
+        <h4>Completion with Tools</h4>
+        <p>The model outputs either a final direct answer (text) or one or more structured <code>ToolCall(name, args)</code>.</p>
+      </div>
+      <div class="flow-card">
+        <div class="step-num">Step 3: Tool Dispatch</div>
+        <h4>Local Execution</h4>
+        <p><code>agent.py</code> looks up <code>TOOL_FUNCTIONS[call.name]</code>, executes it safely with <code>**call.args</code>, and packages the result.</p>
+      </div>
+      <div class="flow-card">
+        <div class="step-num">Step 4: Evidence Synthesis</div>
+        <h4>AgentRun Packaging</h4>
+        <p>The run produces <code>AgentRun(text, tool_calls, tool_results)</code>, enabling audit trails and multi-turn follow-ups.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>2. Eval Failure Taxonomy</h2>
+    <p>The evaluation harness (<code>run_eval.py</code>) validates agent behavior against 6 formal failure types:</p>
+    
+    <table style="width:100%; border-collapse: collapse; font-family: var(--font-sans); font-size: 0.9rem;">
+      <thead>
+        <tr style="border-bottom: 2px solid var(--border); text-align: left;">
+          <th style="padding: 8px;">Failure Type</th>
+          <th style="padding: 8px;">What Happens</th>
+          <th style="padding: 8px;">Root Cause & Fix Location</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom: 1px solid var(--border);">
+          <td style="padding: 8px;"><code>wrong_tool</code></td>
+          <td>Model chose <code>check_service_status</code> instead of <code>inspect_device</code>.</td>
+          <td style="padding: 8px;">Ambiguous tool descriptions in <code>tools.yaml</code>. Clarify distinctions and keywords.</td>
+        </tr>
+        <tr style="border-bottom: 1px solid var(--border);">
+          <td style="padding: 8px;"><code>wrong_arg_value</code></td>
+          <td>Model passed <code>service: "outlook"</code> instead of <code>service: "email"</code>.</td>
+          <td style="padding: 8px;">Schema missing enum constraints or normalization hints in <code>tools.yaml</code>.</td>
+        </tr>
+        <tr style="border-bottom: 1px solid var(--border);">
+          <td style="padding: 8px;"><code>missing_info</code></td>
+          <td>User said "my laptop is broken" without asset ID; agent guessed or failed instead of calling <code>clarify</code>.</td>
+          <td style="padding: 8px;">Add explicit routing rule in <code>system_prompt.md</code>: when ID is missing, call <code>clarify</code>.</td>
+        </tr>
+        <tr style="border-bottom: 1px solid var(--border);">
+          <td style="padding: 8px;"><code>wrong_boundary</code></td>
+          <td>Model called <code>create_ticket</code> without confirmation, or leaked internal data.</td>
+          <td style="padding: 8px;">Define strict confirmation rules in <code>system_prompt.md</code> (require user confirmation).</td>
+        </tr>
+        <tr style="border-bottom: 1px solid var(--border);">
+          <td style="padding: 8px;"><code>unnecessary_tool</code></td>
+          <td>Model invoked tools for a greeting or simple non-operational question.</td>
+          <td style="padding: 8px;">Instruct model in <code>system_prompt.md</code> to reply directly when no tool is needed.</td>
+        </tr>
+        <tr style="border-bottom: 1px solid var(--border);">
+          <td style="padding: 8px;"><code>out_of_scope</code></td>
+          <td>User asked about weather/sports; agent attempted tool search instead of declining.</td>
+          <td style="padding: 8px;">Define boundary scope in <code>system_prompt.md</code>.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>3. Essential Commands Cheat Sheet</h2>
+    <pre><code># 1. Environment & Preflight
+cd starter_v0
+python scripts/preflight_provider.py --provider openrouter
+
+# 2. Run Baseline Eval (v0)
+python run_eval.py --provider openrouter --version v0 --suite base --eval-cases data/eval_base.json
+
+# 3. Run Adversarial Safety Suite (12 cases)
+python run_eval.py --provider openrouter --version v3 --suite adversarial --eval-cases data/eval_adversarial.json
+
+# 4. Run Team-Authored Cases (10 cases: 5 single + 5 multi-turn)
+python run_eval.py --provider openrouter --version v3 --suite group --eval-cases data/eval_group.json
+
+# 5. Interactive Chat CLI with Tool Call Inspection
+python chat.py --provider openrouter --version v3</code></pre>
+  </section>
+
+  <section>
+    <h2>4. Lab Rubric & Scoring Map</h2>
+    <ul>
+      <li><strong>Prompt & Tool Descriptions (20 pts):</strong> Accurate descriptions in <code>tools.yaml</code> matching registry; clear rules in <code>system_prompt.md</code>.</li>
+      <li><strong>Iterative Evidence v0 &rarr; v3 (20 pts):</strong> Concrete hypotheses, clean runs with <code>provider_error_cases == 0</code>, logged in <code>version_log.csv</code>.</li>
+      <li><strong>10 Team Eval Cases (10 pts):</strong> 5 single-turn + 5 multi-turn in <code>data/eval_group.json</code>.</li>
+      <li><strong>Conversation & Safety (15 pts):</strong> 12 adversarial cases, analyzing 3 in detail (no data leakage, no hallucinated IDs).</li>
+      <li><strong>UI & Transcript (10 pts):</strong> Functional chat UI displaying tool calls, inputs, errors, and transcripts.</li>
+      <li><strong>Report & Teamwork (15 pts):</strong> <code>REPORT.md</code>, <code>TEAM.md</code>, and individual reflections.</li>
+      <li><strong>Technical Bonus (10 pts):</strong> 1 custom-built tool with schema, implementation, eval cases, and demo.</li>
+    </ul>
+  </section>
+
+  <footer>
+    <span>IT Helpdesk Teaching Workspace</span>
+    <a href="../lessons/0001-conceptual-walkthrough-tool-calling.html">Proceed to Lesson 01 &rarr;</a>
+  </footer>
+</div>
+</body>
+</html>

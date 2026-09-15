@@ -30,7 +30,7 @@ tools:
       required: [question]
 
   - name: search_kb
-    description: "Tìm trong cơ sở kiến thức IT nội bộ. Chỉ dùng cho các vấn đề hạ tầng chung (VPN, Email, Printing, Wifi, Security, Account, Hardware, Software, Meeting Room). KHÔNG dùng tra cứu thiết bị cá nhân."
+    description: "Tìm hướng dẫn hỗ trợ kỹ thuật như cấu hình, cài đặt phần mềm, hệ điều hành."
     parameters:
       type: object
       properties:
@@ -58,7 +58,7 @@ tools:
       required: [query]
 
   - name: check_service_status
-    description: "Dùng để tra cứu dịch vụ hạ tầng chung (VPN, Email, Printing). KHÔNG dùng tra cứu thiết bị cá nhân"
+    description: "Kiểm tra trạng thái một dịch vụ. Cần dùng khi dịch vụ gặp sự cố hoặc người dùng yêu cầu. Xác định rõ môi trường staging/production, nếu không có hỏi lại người dùng"
     parameters:
       type: object
       properties:
