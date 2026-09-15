@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Lesson 01: Mental Model of Tool Calling & The Eval Loop</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script>
+    function checkAnswer(button, isCorrect, feedbackId) {
+      const parent = button.parentElement;
+      const options = parent.querySelectorAll('.quiz-option');
+      options.forEach(opt => {
+        opt.disabled = true;
+      });
+      const feedback = document.getElementById(feedbackId);
+      if (isCorrect) {
+        button.classList.add('correct');
+        feedback.style.display = 'block';
+        feedback.style.background = 'var(--success-bg)';
+        feedback.style.color = 'var(--success)';
+        feedback.innerHTML = '<strong>Correct!</strong> When critical identifiers are absent, an enterprise agent must not fabricate or guess parameters; it must suspend execution and ask the user via <code>clarify</code>.';
+      } else {
+        button.classList.add('wrong');
+        feedback.style.display = 'block';
+        feedback.style.background = 'var(--error-bg)';
+        feedback.style.color = 'var(--error)';
+        feedback.innerHTML = '<strong>Incorrect.</strong> Guessing parameters or halting abruptly creates operational incidents. The agent must proactively clarify missing prerequisites.';
+      }
+    }
+  </script>
+</head>
+<body>
+<div class="container">
+  <header>
+    <span class="badge">Lesson 01</span>
+    <h1>Mental Model of Tool Calling & The Eval Loop</h1>
+    <p class="subtitle">How LLMs orchestrate tools, why v0 fails, and how the evaluation harness grades your agent.</p>
+    <div class="meta-bar">
+      <span>Duration: 10 mins</span>
+      <span>Topic: Tool-Calling Architecture</span>
+      <span>Reference: <a href="../reference/01-tool-calling-architecture.html">Architecture Reference</a></span>
+    </div>
+  </header>
+
+  <section>
+    <h2>1. The Fundamental Mental Model</h2>
+    <p>
+      A common beginner misconception is that an LLM "executes code" or "calls APIs directly". It does not.
+      An LLM is purely a text-in, text-out neural network. Tool calling is a protocol:
+    </p>
+    <div class="flow-grid">
+      <div class="flow-card">
+        <div class="step-num">Phase 1</div>
+        <h4>Schema Declaration</h4>
+        <p>We declare tools in <code>tools.yaml</code>. The provider translates these definitions into JSON Schema so the model knows what functions exist.</p>
+      </div>
+      <div class="flow-card">
+        <div class="step-num">Phase 2</div>
+        <h4>Structured Intent</h4>
+        <p>The model outputs a structured JSON object: <code>{"name": "inspect_device", "args": {"asset_id": "LP-1042"}}</code>.</p>
+      </div>
+      <div class="flow-card">
+        <div class="step-num">Phase 3</div>
+        <h4>Local Execution</h4>
+        <p>Our Python code in <code>agent.py</code> inspects the JSON, calls the corresponding Python function in <code>tools/</code>, and intercepts any errors.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>2. Why the Starter (v0) Fails Out of the Box</h2>
+    <p>
+      In <code>starter_v0</code>, the agent is intentionally crippled with two incomplete artifacts:
+    </p>
+    <ul>
+      <li>
+        <strong>Vague tool descriptions in <code>tools.yaml</code>:</strong> For example, <code>clarify</code> is described merely as <em>"Gửi một câu hỏi cho người dùng"</em> without stating when it should be used (e.g., when asset ID is missing, or before executing destructive actions).
+      </li>
+      <li>
+        <strong>Incomplete system prompt in <code>system_prompt.md</code>:</strong> The baseline prompt lacks instructions for multi-turn conversations, doesn't mandate asking for user confirmation before creating tickets, and has no safety perimeter preventing internal policy leakages.
+      </li>
+    </ul>
+    <div class="callout warning">
+      <strong>Key Takeaway:</strong> You do NOT need to rewrite <code>agent.py</code> or <code>run_eval.py</code>. The entire point of the lab is to diagnose failures produced by <code>v0</code>, formulate targeted hypotheses, and refine <code>system_prompt.md</code> and <code>tools.yaml</code> through versions <code>v1 &rarr; v2 &rarr; v3</code>.
+    </div>
+  </section>
+
+  <section>
+    <h2>3. The Eval Harness & Failure Modes</h2>
+    <p>
+      When you run <code>run_eval.py</code>, it loads test cases from <code>data/eval_base.json</code> and evaluates the agent's output against ground truth. Here are the core failure categories you will encounter:
+    </p>
+    <ul>
+      <li><code>wrong_tool</code>: The user asked to check network status, but the model called <code>search_kb</code> instead of <code>check_service_status</code>.</li>
+      <li><code>wrong_arg_value</code>: The model called the right tool, but passed invalid arguments (e.g., passing <code>"outlook"</code> instead of <code>"email"</code>).</li>
+      <li><code>missing_info</code>: The user stated "My computer cannot boot", but didn't provide an asset ID. Rather than calling <code>clarify</code> to request the asset ID, the model either hallucinated an ID or failed to act.</li>
+      <li><code>wrong_boundary</code>: The user asked to create a ticket, but the agent created it immediately without asking for confirmation first.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>4. Quick Concept Check</h2>
+    <div class="quiz-box">
+      <h3>Scenario Practice</h3>
+      <p>
+        A user types: <em>"My laptop screen is flickering, please inspect it."</em> (Notice: no Asset ID is provided in the prompt).
+        According to production IT helpdesk safety guidelines, what should the agent do?
+      </p>
+      
+      <!-- All options are balanced to exactly 7 words -->
+      <button class="quiz-option" onclick="checkAnswer(this, true, 'fb-1')">
+        Ask user to provide their asset identifier.
+      </button>
+      <button class="quiz-option" onclick="checkAnswer(this, false, 'fb-1')">
+        Guess the default company laptop serial number.
+      </button>
+      <button class="quiz-option" onclick="checkAnswer(this, false, 'fb-1')">
+        Execute inspection tool using empty string parameter.
+      </button>
+      <button class="quiz-option" onclick="checkAnswer(this, false, 'fb-1')">
+        Reject user request as completely out domain.
+      </button>
+
+      <div id="fb-1" class="quiz-feedback"></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>5. Recommended Primary Source</h2>
+    <p>
+      Read the <a href="https://platform.openai.com/docs/guides/function-calling" target="_blank">OpenAI Function Calling & Structured Outputs Guide</a>. Pay close attention to how descriptions guide parameter extraction and model intent.
+    </p>
+  </section>
+
+  <section>
+    <div class="callout tip">
+      <strong>Your Teacher is Ready:</strong> As you work through the lab, ask follow-up questions at any point! In the next step, we will prepare the environment and run the actual baseline evaluation (<code>v0</code>).
+    </div>
+  </section>
+
+  <footer>
+    <a href="../reference/01-tool-calling-architecture.html">&larr; Back to Reference Guide</a>
+    <span>Next: Baseline Execution (v0) &amp; Log Analysis</span>
+  </footer>
+</div>
+</body>
+</html>
