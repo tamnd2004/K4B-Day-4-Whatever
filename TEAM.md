@@ -48,11 +48,11 @@ Sao chép mục này cho từng thành viên.
 
 ### Nguyễn Tiến Đạt — 2A202602970
 
-- Phần việc và file/commit/PR:
-- Quyết định, khó khăn và cách xử lý:
-- Điều đã học:
-- AI/công cụ đã dùng và cách kiểm tra:
-- Thời điểm đã tự nộp URL repo chung trên VLearn:
+- Phần việc và file/commit/PR: update version 1,2 bằng cách mô tả rõ hơn system prompt và tool desciption qua commit deliver v1,v2 và PR datttiennguyen/v1 và dattiennguyen/v2
+- Quyết định, khó khăn và cách xử lý: khó khăn trong việc hiểu các tool để viết đúng desciption và đọc từng runs v0 để tìm xem nên instruction system prompt như nào -> nhờ AI tổng hợp lại các lỗi hiện tại của từng case để có thể thêm đúng system prompt
+- Điều đã học: các model hoàn toàn có thể tự ý làm những điều mà system prompt không restrict nên cần hiểu bản chất từng tool để có những hướng dẫn và quy tắc an toàn để ngăn chặn model từ ý làm điều vượt quá nên làm
+- AI/công cụ đã dùng và cách kiểm tra: antigravity để tổng hợp các lí do fail để đưa ra các version chỉnh sửa cho system prompt và tool desciption
+- Thời điểm đã tự nộp URL repo chung trên VLearn: 22:38:58 15/9/2026
 
 ### Trần Mạnh Hùng — 2A202602708
 
