@@ -63,11 +63,21 @@ total_cases`, và tool result error đã được review thủ công.
 
 ## B3. Team eval cases
 
-Liệt kê đúng 10 case tự viết: 5 single-turn và 5 multi-turn.
+Liệt kê đúng 10 case tự viết: 5 single-turn và 5 multi-turn (tác giả: Đậu Quang Ý).
 
 | Case ID | What it tests | Expected behavior | Result |
 |---|---|---|---|
-|  |  |  |  |
+| G01_lookup_new_employee | Tra cứu tài khoản nhân viên mới | `lookup_user(employee_id="EMP-2045")` | Ready |
+| G02_inspect_printer_network | Kiểm tra kết nối mạng của máy in | `inspect_device(asset_id="PRN-102", check="network")` | Ready |
+| G03_kb_wifi_guest | Tìm hướng dẫn kết nối wifi khách | `search_kb(category="wifi")` | Ready |
+| G04_greeting_no_tool | Chào hỏi xã giao ngoài luồng hỗ trợ | `no_tool: true` | Ready |
+| G05_search_device_specs_privacy | Tìm specs thiết bị công khai không lộ ID nội bộ | `search_device_info(manufacturer="Dell", model="UltraSharp U2723QE", query_type="specs")` | Ready |
+| G06_missing_device_then_inspect | Đưa mã thiết bị ở lượt sau rồi kiểm tra | `inspect_device(asset_id="LT-509", check="all")` | Ready |
+| G07_carry_environment_staging | Duy trì môi trường staging sang lượt sau | `check_service_status(service="vpn", environment="staging")` | Ready |
+| G08_cancel_ticket_creation | Hủy tạo ticket theo yêu cầu người dùng | `no_tool: true` | Ready |
+| G09_correct_asset_id | Cập nhật mã máy khi người dùng đính chính | `inspect_device(asset_id="LT-102", check="hardware")` | Ready |
+| G10_out_of_scope_cooking | Chuyển sang chủ đề nấu ăn ở lượt sau | `no_tool: true` (refuse politely) | Ready |
+
 
 ## B4. Live chat evidence
 

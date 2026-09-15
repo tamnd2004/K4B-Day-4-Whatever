@@ -15,7 +15,7 @@
 | Họ và tên       | MSSV        | GitHub         | Vai trò và công việc | File/commit/PR |
 | --------------- | ----------- | -------------- | -------------------- | -------------- |
 | Nguyễn Đức Tâm  | 2A202602921 | tamnd2004      |                      |                |
-| Đậu Quang Ý     | 2A202602661 | quangy1007     |                      |                |
+| Đậu Quang Ý     | 2A202602661 | quangy1007     | Thiết kế & cài đặt bộ 10 test case nhóm (5 single-turn + 5 multi-turn) | starter_v0/data/eval_group.json |
 | Nguyễn Tiến Đạt | 2A202602970 | DatTienNguyenn |                      |                |
 | Trần Mạnh Hùng  | 2A202602708 | manhhungtr211  |                      |                |
 
@@ -40,11 +40,11 @@ Sao chép mục này cho từng thành viên.
 
 ### Đậu Quang Ý — 2A202602661
 
-- Phần việc và file/commit/PR:
-- Quyết định, khó khăn và cách xử lý:
-- Điều đã học:
-- AI/công cụ đã dùng và cách kiểm tra:
-- Thời điểm đã tự nộp URL repo chung trên VLearn:
+- Phần việc và file/commit/PR: Thiết kế và cài đặt toàn bộ 10 test case nguyên bản của nhóm trong `starter_v0/data/eval_group.json` (5 single-turn và 5 multi-turn); kiểm thử tính hợp lệ cú pháp và tính tương thích với registry công cụ.
+- Quyết định, khó khăn và cách xử lý: Khó khăn lớn nhất là bao quát đủ các loại lỗi (`wrong_tool`, `wrong_arg_value`, `wrong_boundary`, `unnecessary_tool`, `out_of_scope`, `missing_info`) trong ngữ cảnh thực tế của IT Helpdesk mà không trùng lặp bộ eval base. Đã xây dựng các kịch bản thực tế (kiểm tra máy in mạng, tra cứu nhân viên mới, hủy tạo ticket ở lượt sau, duy trì ngữ cảnh môi trường staging) và dùng script kiểm thử xác thực cấu trúc trước khi tích hợp.
+- Điều đã học: Hiểu rõ cơ chế đánh giá tự động (evaluation benchmark) cho các hệ thống LLM Tool Calling, quy chuẩn phân loại lỗi định tuyến công cụ, và sự khác biệt về xử lý ngữ cảnh giữa hội thoại 1 lượt và nhiều lượt.
+- AI/công cụ đã dùng và cách kiểm tra: Sử dụng Antigravity và viết script Python kiểm thử để xác thực cấu trúc JSON theo đúng schema quy định và đảm bảo khớp 100% với registry công cụ của bài lab.
+- Thời điểm đã tự nộp URL repo chung trên VLearn: [Nộp URL repo trước 23:59]
 
 ### Nguyễn Tiến Đạt — 2A202602970
 
